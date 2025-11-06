@@ -15,16 +15,61 @@
         .form-group {
             margin-bottom: 15px;
         }
+        .app-card { margin-bottom: 16px; }
+        .controls-row .form-control, .controls-row .form-select { min-width: 0; }
+        .result-table th:nth-child(1), .result-table td:nth-child(1) { width: 50px; }
+        .result-table th:nth-child(3), .result-table td:nth-child(3) { width: 160px; }
+        .result-table th:nth-child(4), .result-table td:nth-child(4) { width: 120px; }
+        /* Mejor alineación: fijar alturas y márgenes en tarjetas para que inputs y botones alineen */
+        .app-card .form-label { margin-bottom: 0.25rem; }
+        .app-card .form-control, .app-card .form-select, .app-card .btn {
+            height: 44px;
+        }
+        /* Evitar alturas fijas en móviles */
+        @media (max-width: 576px) {
+            .app-card .form-control, .app-card .form-select, .app-card .btn { height: auto; }
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1 class="mb-4">Contador de Asistencias</h1>
-        
-        <div class="form-group">
-            <label for="csvFile" class="form-label">Seleccionar archivo CSV:</label>
-            <input type="file" class="form-control" id="csvFile" accept=".csv">
-            <button class="btn btn-info mt-2" onclick="showCsvData()" id="viewCsvBtn" disabled>Ver Datos del CSV</button>
+
+        <!-- Card: Carga de CSV -->
+        <div class="card app-card">
+            <div class="card-body">
+                <div class="row g-3 align-items-center">
+                            <div class="col-md-8">
+                                <label for="csvFile" class="form-label">Seleccionar archivo CSV</label>
+                                <input type="file" class="form-control" id="csvFile" accept=".csv">
+                            </div>
+                            <div class="col-md-4 d-flex align-items-end">
+                                <button type="button" id="viewCsvBtn" data-match="#csvFile" class="btn btn-info" disabled>Ver CSV</button>
+                            </div>
+                    
+                </div>
+            </div>
+        </div>
+
+        <!-- Card: Rango de fechas y acciones -->
+        <div class="card app-card">
+            <div class="card-body">
+                <div class="row g-3 align-items-center">
+                    <div class="col-md-6">
+                        <label class="form-label">Rango de fechas</label>
+                        <div class="d-flex gap-2" id="dateRangeGroup">
+                            <input type="date" class="form-control" id="startDate">
+                            <input type="date" class="form-control" id="endDate">
+                        </div>
+                    </div>
+                    <div class="col-md-3 d-flex align-items-end">
+                        <button type="button" id="processBtn" data-match="#dateRangeGroup" class="btn btn-primary" onclick="processData()">Procesar</button>
+                    </div>
+                    <div class="col-md-3 d-flex align-items-end">
+                        <button type="button" id="exportBtn" data-match="#dateRangeGroup" class="btn btn-success" onclick="exportToExcel()" disabled>Exportar</button>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- Modal para mostrar datos CSV -->
@@ -53,8 +98,8 @@
                         </div>
                         <div class="row mb-3">
                             <div class="col">
-                                <button class="btn btn-primary" onclick="applyFilters()">Aplicar Filtros</button>
-                                <button class="btn btn-secondary" onclick="clearFilters()">Limpiar Filtros</button>
+                                <button class="btn btn-primary" onclick="applyFilters()">Filtrar</button>
+                                <button class="btn btn-secondary" onclick="clearFilters()">Limpiar</button>
                             </div>
                         </div>
                         <div class="table-responsive">
@@ -71,29 +116,20 @@
             </div>
         </div>
 
-        <div class="row mb-3">
-            <div class="col-md-6">
-                <label for="startDate" class="form-label">Fecha inicial:</label>
-                <input type="date" class="form-control" id="startDate">
-            </div>
-            <div class="col-md-6">
-                <label for="endDate" class="form-label">Fecha final:</label>
-                <input type="date" class="form-control" id="endDate">
-            </div>
-        </div>
+        <!-- (Los controles de fecha y botones se muestran en la tarjeta superior) -->
 
-        <button class="btn btn-primary mb-3" onclick="processData()">Procesar Datos</button>
-        <button class="btn btn-success mb-3 ms-2" onclick="exportToExcel()" id="exportBtn" disabled>Exportar a Excel</button>
-
-        <!-- Controles para la tabla de resultados -->
-        <div class="row mb-2">
-            <div class="col-md-3 d-flex align-items-center">
+        <!-- Card: Resultados y controles -->
+        <div class="card app-card">
+            <div class="card-body">
+                <!-- Controles para la tabla de resultados -->
+                <div class="row mb-2">
+            <div class="col-md-6 d-flex align-items-center">
                 <input type="checkbox" id="onlyMissing" class="form-check-input me-2">
                 <label for="onlyMissing" class="form-check-label">Mostrar solo con ausencias</label>
             </div>
-            <div class="col-md-3 d-flex align-items-center">
+            <div class="col-md-6 d-flex align-items-center">
                 <input type="checkbox" id="excludeRest" class="form-check-input me-2">
-                <label for="excludeRest" class="form-check-label me-2">Excluir día de descanso:</label>
+                <label for="excludeRest" class="form-check-label me-2">Excluir día de descanso</label>
                 <select id="restDaySelect" class="form-select" style="width:160px;">
                     <option value="">-- Seleccionar día --</option>
                     <option value="1">Lunes</option>
@@ -105,17 +141,11 @@
                     <option value="0">Domingo</option>
                 </select>
             </div>
-            <div class="col-md-3 d-flex align-items-center">
-                <label for="truncateCount" class="me-2 mb-0">Mostrar fechas (máx):</label>
-                <input type="number" id="truncateCount" class="form-control" style="width:100px;" value="3" min="1">
-            </div>
-            <div class="col-md-3 d-flex align-items-center">
-                <button class="btn btn-outline-secondary" onclick="expandedSet.clear(); updateTable();">Restablecer Ver Más</button>
-            </div>
         </div>
 
-        <div class="table-responsive">
-            <table class="table table-striped" id="resultTable">
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-striped result-table" id="resultTable">
                 <thead>
                     <tr>
                         <th>N°</th>
@@ -131,45 +161,72 @@
     </div>
 
     <script>
-        let processedData = [];
-        let csvData = null;
-        let csvModal = null;
-        let originalCsvData = null; // Para mantener una copia de los datos originales
+    let processedData = [];
+    let csvModal = null;
+    let originalCsvData = null; // Para mantener una copia de los datos originales (líneas)
+    let csvHeaders = null; // Array de encabezados en minúsculas
 
-        // Manejador de evento para cuando se selecciona un archivo
-        document.getElementById('csvFile').addEventListener('change', function(e) {
-            document.getElementById('viewCsvBtn').disabled = !e.target.files[0];
+        // Utilidad: obtener índice de header por nombres posibles
+        function getHeaderIndex(possibleNames, defaultIdx = -1) {
+            if (!csvHeaders) return defaultIdx;
+            for (const name of possibleNames) {
+                const idx = csvHeaders.indexOf(name.toLowerCase());
+                if (idx >= 0) return idx;
+            }
+            return defaultIdx;
+        }
+
+        // Inicializar listeners cuando el DOM esté listo
+        function initListeners() {
+            const csvEl = document.getElementById('csvFile');
+            if (csvEl) {
+                csvEl.addEventListener('change', function(e) {
+                    const viewBtn = document.getElementById('viewCsvBtn');
+                    if (viewBtn) viewBtn.disabled = !e.target.files[0];
+                });
+            }
+
+            const viewBtn = document.getElementById('viewCsvBtn');
+            if (viewBtn) {
+                viewBtn.addEventListener('click', function() { showCsvData(); });
+            }
+
+            // Auto-recargar la tabla cuando cambian los controles
+            const onlyMissingEl = document.getElementById('onlyMissing');
+            if (onlyMissingEl) onlyMissingEl.addEventListener('change', updateTable);
+
+            const excludeRestEl = document.getElementById('excludeRest');
+            if (excludeRestEl) excludeRestEl.addEventListener('change', updateTable);
+
+            const restDaySelectEl = document.getElementById('restDaySelect');
+            if (restDaySelectEl) restDaySelectEl.addEventListener('change', updateTable);
+
+            // Ajustar anchos de botones después de inicializar
+            setTimeout(matchButtonWidths, 60);
+        }
+
+        document.addEventListener('DOMContentLoaded', initListeners);
+
+        // Ajustar anchos de botones para que coincidan con los inputs adyacentes
+        function matchButtonWidths() {
+            const buttons = document.querySelectorAll('button[data-match]');
+            buttons.forEach(btn => {
+                const sel = btn.getAttribute('data-match');
+                const target = document.querySelector(sel);
+                if (target) {
+                    const rect = target.getBoundingClientRect();
+                    // usar ancho del contenedor visible
+                    const width = rect.width;
+                    btn.style.width = width + 'px';
+                }
+            });
+        }
+
+        // Llamar al redimensionar (debounced)
+        window.addEventListener('resize', function() {
+            clearTimeout(window._matchBtnTimeout);
+            window._matchBtnTimeout = setTimeout(matchButtonWidths, 80);
         });
-
-        // Auto-recargar la tabla cuando cambian los controles (checkbox, rest day o límite de fechas mostradas)
-        const onlyMissingEl = document.getElementById('onlyMissing');
-        if (onlyMissingEl) {
-            onlyMissingEl.addEventListener('change', function() {
-                updateTable();
-            });
-        }
-
-        const truncateEl = document.getElementById('truncateCount');
-        if (truncateEl) {
-            truncateEl.addEventListener('input', function() {
-                updateTable();
-            });
-        }
-
-        const excludeRestEl = document.getElementById('excludeRest');
-        if (excludeRestEl) {
-            excludeRestEl.addEventListener('change', function() {
-                updateTable();
-            });
-        }
-
-        const restDaySelectEl = document.getElementById('restDaySelect');
-        if (restDaySelectEl) {
-            restDaySelectEl.addEventListener('change', function() {
-                // Si hay una selección y el checkbox no está marcado, no hacemos nada hasta que marque el checkbox
-                updateTable();
-            });
-        }
 
         function showCsvData() {
             const fileInput = document.getElementById('csvFile');
@@ -181,17 +238,17 @@
             const reader = new FileReader();
             reader.onload = function(event) {
                 const csv = event.target.result;
-                const lines = csv.split('\n');
-                const headers = lines[0].split(',');
+                const lines = csv.split(/\r?\n/);
 
-                // Guardar datos del CSV para uso posterior
-                csvData = lines;
+                // Guardar datos del CSV para uso posterior (mantener copia)
                 originalCsvData = lines.slice(); // Hacer una copia de los datos originales
 
                 // Crear encabezados de la tabla
                 const thead = document.querySelector('#csvTable thead');
+                const headers = lines[0].split(',').map(h => h.trim());
+                csvHeaders = headers.map(h => h.toLowerCase());
                 thead.innerHTML = '<tr>' + headers.map(header => 
-                    `<th>${header.trim()}</th>`
+                    `<th>${header}</th>`
                 ).join('') + '</tr>';
 
                 updateCsvTable(lines);
@@ -212,22 +269,23 @@
 
             // Mostrar solo las primeras 100 filas para mejor rendimiento
             const maxRows = Math.min(lines.length, 100);
+            const headers = lines[0].split(',');
             for (let i = 1; i < maxRows; i++) {
                 const line = lines[i].trim();
                 if (!line) continue;
                 
                 const values = line.split(',');
                 const row = tbody.insertRow();
-                values.forEach(value => {
-                    row.insertCell().textContent = value.trim();
-                });
+                for (let c = 0; c < headers.length; c++) {
+                    row.insertCell().textContent = (values[c] || '').trim();
+                }
             }
 
             // Mostrar mensaje si hay más de 100 filas
             if (lines.length > 100) {
                 const messageRow = tbody.insertRow();
                 const cell = messageRow.insertCell();
-                cell.colSpan = lines[0].split(',').length;
+                cell.colSpan = headers.length;
                 cell.className = 'text-center text-muted';
                 cell.textContent = `Mostrando 100 de ${lines.length - 1} registros`;
             }
@@ -238,16 +296,22 @@
             const dateStart = document.getElementById('filterDateStart').value;
             const dateEnd = document.getElementById('filterDateEnd').value;
 
+            if (!originalCsvData || originalCsvData.length === 0) return;
+
             // Filtrar los datos
-            let filteredLines = originalCsvData.slice(0, 1); // Mantener la línea de encabezados
-            
+            let filteredLines = [originalCsvData[0]]; // Mantener la línea de encabezados
+
+            // Determinar índices (usar csvHeaders si existen)
+            const nameIdx = getHeaderIndex(['name', 'nombre'], 1);
+            const dateIdx = getHeaderIndex(['date', 'fecha'], 2);
+
             for (let i = 1; i < originalCsvData.length; i++) {
                 const line = originalCsvData[i].trim();
                 if (!line) continue;
 
                 const values = line.split(',');
-                const name = values[1].toLowerCase();
-                const date = values[2];
+                const name = (values[nameIdx] || '').toLowerCase();
+                const date = (values[dateIdx] || '');
 
                 // Aplicar filtros
                 let includeRow = true;
@@ -296,10 +360,9 @@
             const reader = new FileReader();
             reader.onload = function(event) {
                 const csv = event.target.result;
-                const lines = csv.split('\n');
-                const headers = lines[0].split(',');
+                const lines = csv.split(/\r?\n/).filter(Boolean);
 
-                // Crear objeto para almacenar datos por persona
+                // Crear objeto para almacenar datos por persona (clave única)
                 const personData = {};
                 const allDates = new Set();
                 
@@ -310,39 +373,53 @@
                     allDates.add(d.toISOString().split('T')[0]);
                 }
 
+                // Preparar índices a partir de headers si están disponibles
+                if (!csvHeaders && lines.length) {
+                    csvHeaders = lines[0].split(',').map(h => h.trim().toLowerCase());
+                }
+                const idIdx = getHeaderIndex(['id', 'user_id', 'userid', 'identificador'], 0);
+                const nameIdx = getHeaderIndex(['name', 'nombre'], 1);
+                const dateIdx = getHeaderIndex(['date', 'fecha'], 2);
+
                 // Procesar cada línea del CSV
                 for (let i = 1; i < lines.length; i++) {
                     const line = lines[i].trim();
                     if (!line) continue;
                     
                     const values = line.split(',');
-                    const name = values[1];
-                    const date = values[2];
+                    const rawId = (values[idIdx] || '').trim();
+                    const rawName = (values[nameIdx] || '').trim();
+                    const date = (values[dateIdx] || '').trim();
 
                     // Verificar si la fecha está en el rango seleccionado
-                    if (date >= startDate && date <= endDate) {
-                        if (!personData[name]) {
-                            personData[name] = {
-                                count: 0,
-                                dates: new Set()
-                            };
-                        }
+                    if (!date || date < startDate || date > endDate) continue;
 
-                        personData[name].count++;
-                        personData[name].dates.add(date);
+                    // Usar id cuando exista, si no usar el nombre como clave
+                    const key = rawId || rawName;
+                    const displayName = rawName || rawId || 'Sin Nombre';
+
+                    if (!personData[key]) {
+                        personData[key] = {
+                            name: displayName,
+                            count: 0,
+                            dates: new Set()
+                        };
                     }
+
+                    personData[key].count++;
+                    personData[key].dates.add(date);
                 }
 
                 // Preparar datos para la tabla
-                processedData = Object.entries(personData)
-                    .map(([name, data]) => {
+                processedData = Object.values(personData)
+                    .map(data => {
                         // Encontrar fechas sin asistencia
                         const missingDates = Array.from(allDates)
                             .filter(date => !data.dates.has(date))
                             .sort();
 
                         return {
-                            name,
+                            name: data.name,
                             attendance: data.count,
                             missingCount: missingDates.length,
                             missingDates: missingDates.join(', ') || 'Ninguna'
@@ -351,7 +428,8 @@
                     .sort((a, b) => a.name.localeCompare(b.name));
 
                 updateTable();
-                document.getElementById('exportBtn').disabled = false;
+                const expBtn = document.getElementById('exportBtn');
+                if (expBtn) { expBtn.disabled = false; expBtn.style.display = ''; }
             };
 
             reader.readAsText(fileInput.files[0]);
@@ -410,8 +488,8 @@
             tbody.innerHTML = '';
 
             const displayed = getDisplayedData();
-            const truncateCountInput = document.getElementById('truncateCount');
-            const truncateCount = truncateCountInput ? parseInt(truncateCountInput.value, 10) || 5 : 5;
+            // Valor por defecto para mostrar fechas (máx): 2
+            const truncateCount = 2;
 
             displayed.forEach((person, index) => {
                 const row = tbody.insertRow();
